@@ -1,0 +1,5 @@
+docker-compose.yml
+# Ignore Jupyter Notebook files
+*.ipynb
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
