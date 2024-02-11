@@ -3,21 +3,13 @@ import os
 import datetime
 from uuid import uuid4
 import json
-from kafka import KafkaProducer
 
 from flask import Flask, request, jsonify
 
 MONGO_CLIENT = os.environ.get("MONGO_CLIENT")
-PUBLIC_IP = os.environ.get("PUBLIC_IP")
-
-TOPIC_TRIPS = os.environ.get("TOPIC_DRONES", "cabifly.trips")
 
 client = pymongo.MongoClient(MONGO_CLIENT, tlsAllowInvalidCertificates=True)
 db = client.cabifly
-
-producer = KafkaProducer(
-    bootstrap_servers=[PUBLIC_IP],
-)
 
 app = Flask(__name__)
 
@@ -45,10 +37,6 @@ def post_trips(user_id):
     db.trips.insert_one(trip_item)
 
     trip_item.pop("_id")
-
-    message = {"event": "drone-requested", "body": trip_item}
-
-    producer.send(TOPIC_TRIPS, json.dumps(message).encode("utf-8"))
 
     return jsonify(trip_item)
 

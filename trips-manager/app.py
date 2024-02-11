@@ -19,26 +19,24 @@ consumer = KafkaConsumer(
 
 for message in consumer:
     try:
-        event = json.loads(message.value.decode("utf-8"))
+        event = json.loads(json.loads(message.value.decode("utf-8"))["payload"])["fullDocument"]
         print(event)
     except json.JSONDecodeError:
         print("Error decoding JSON message.")
         continue
 
-    trip_id = event["body"]["trip_id"]
-
     res = requests.get(
         "http://drones-api:8000/drones",
         params={
-            "lon": event["body"]["location"][0],
-            "lat": event["body"]["location"][1],
+            "lon": event["location"][1],
+            "lat": event["location"][0],
             "distance": 1000,
         },
     ).json()
     drone = res[0]
 
     # Example data
-    filter_criteria = {"trip_id": event["body"]["trip_id"]}
+    filter_criteria = {"trip_id": event["trip_id"]}
     update_data = {"drone_id": drone["drone_id"], "status": "accepted"}
 
     db.trips.update_one(filter_criteria, {"$set": update_data})
